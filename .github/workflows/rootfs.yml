@@ -103,13 +103,18 @@ jobs:
   build-kernel:
     name: "Build Kernel"
     runs-on: ubuntu-24.04-arm
-    if: ${{ inputs.kernel_source == 'custom_build' }}
 
     steps:
+      - name: "Skip (Prebuilt Kernel)"
+        if: ${{ inputs.kernel_source != 'custom_build' }}
+        run: echo "✓ Using prebuilt kernel, build skipped"
+
       - name: "Checkout Repo"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         uses: actions/checkout@v4
 
       - name: "Install Build Tools"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y \
@@ -122,6 +127,7 @@ jobs:
           echo "✓ Build tools installed"
 
       - name: "Restore ccache"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         uses: actions/cache@v4
         with:
           path: /home/runner/.ccache
@@ -132,6 +138,7 @@ jobs:
             ccache-kernel-
 
       - name: "Clone Kernel Repo"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         run: |
           git clone "${{ inputs.kernel_repo }}" \
             --branch "${{ inputs.kernel_branch }}" \
@@ -141,6 +148,7 @@ jobs:
 
       - name: "Build Kernel"
         id: build
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         run: |
           export CCACHE_DIR=/home/runner/.ccache
           export PATH="/usr/lib/ccache:$PATH"
@@ -186,6 +194,7 @@ jobs:
           echo "✓ Kernel build complete"
 
       - name: "Package Kernel"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         run: |
           KVER="${{ steps.build.outputs.kernel_version }}"
           mkdir -p linux-xiaomi-sheng/DEBIAN
@@ -201,6 +210,7 @@ jobs:
           echo "✓ linux-xiaomi-sheng.deb packaged"
 
       - name: "Upload Kernel Package"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         uses: actions/upload-artifact@v4
         with:
           name: kernel-custom-deb
@@ -209,6 +219,7 @@ jobs:
           if-no-files-found: error
 
       - name: "Upload Kernel Image"
+        if: ${{ inputs.kernel_source == 'custom_build' }}
         uses: actions/upload-artifact@v4
         with:
           name: kernel-custom-image
@@ -557,6 +568,7 @@ jobs:
     name: "Build RootFS"
     runs-on: ubuntu-24.04-arm
     needs:
+      - build-kernel
       - build-fastrpc
       - build-libssc
       - build-iio-sensor-proxy
