@@ -814,13 +814,27 @@ jobs:
       # System Tuning
       # ----------------------------------------------------------------
 
-      - name: "Fix adsprpcd Permissions"
+      - name: "Fix Permissions"
         run: |
           if [ -f "$ROOTFS_MOUNT/usr/bin/adsprpcd" ]; then
             sudo chmod +x "$ROOTFS_MOUNT/usr/bin/adsprpcd"
             echo "✓ adsprpcd permissions fixed"
           else
             echo "  /usr/bin/adsprpcd not found, skipped"
+          fi
+
+          if [ -f "$ROOTFS_MOUNT/usr/libexec/iio-sensor-proxy" ]; then
+            sudo chmod +x "$ROOTFS_MOUNT/usr/libexec/iio-sensor-proxy"
+            echo "✓ iio-sensor-proxy permissions fixed"
+          else
+            echo "  /usr/libexec/iio-sensor-proxy not found, skipped"
+          fi
+
+          if [ -f "$ROOTFS_MOUNT/usr/bin/monitor-sensor" ]; then
+            sudo chmod +x "$ROOTFS_MOUNT/usr/bin/monitor-sensor"
+            echo "✓ monitor-sensor permissions fixed"
+          else
+            echo "  /usr/bin/monitor-sensor not found, skipped"
           fi
 
       - name: "Set Hostname"
